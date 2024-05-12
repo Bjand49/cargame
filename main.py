@@ -13,7 +13,7 @@ class EntityType(Enum):
     WALL = 1,
     CAR = 2
     CHECKPOINT = 3,
-    RAY = 3
+    RAY = 4
 
 class Vector:
     def __init__(self, x: int = 0, y: int = 0):
@@ -38,28 +38,27 @@ class Vector:
 
     def __eq__(self, other: 'Vector') -> bool:
         return self.x == other.x and self.y == other.y
-
-    @classmethod
-    def random_within(cls, scope: 'Vector') -> 'Vector':
-        return Vector(random.randint(0, scope.x - 1), random.randint(0, scope.y - 1))
-
+    
+        
 class CarGame:
     def __init__(self, scale: int = 30):
         self.scale = scale
         self.entities: List[Entity]= []
         self.checkpoints: List[Entity]= []
+
         ysize,xsize = self.load_map()
         self.grid = Vector(xsize, ysize)
         self.current_checkpoint = None
         pygame.init()
+
         self.screen = pygame.display.set_mode((xsize * scale, ysize * scale))
         self.clock = pygame.time.Clock()
-        self.car = Car(game= self, position=Vector(3,3))
         self.car_color = (255, 0, 0)
         self.wall_color = (0, 255, 0)
         self.checkpoint_color = (0, 0, 255)
         self.draw_map()
         self.set_next_checkpoint()
+        
 
     def load_map(self):
         filename = 'road.csv'
@@ -78,6 +77,9 @@ class CarGame:
                 if cell == 'x':
                     self.entities.append(Entity(Vector(j,y),EntityType.WALL))
                     
+                elif cell == 'C':
+                    self.car = Car(game=self,position=Vector(j,y))
+
                 elif cell != '':
                     checkpoints.append(dict({
                             'id':cell,
@@ -90,6 +92,7 @@ class CarGame:
         
 
     def draw_map(self):
+        
         for i,b in enumerate(self.entities):
             color = (255, 255, 255)
             if(b.type == EntityType.CHECKPOINT):
@@ -107,24 +110,28 @@ class CarGame:
         return (obj.x * self.scale, obj.y * self.scale, self.scale, self.scale)
 
     def run(self):
+        
         running = True          
 
         while running:
             # handle pygame events
+            print(f'Speed: {self.car.speed}')
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.car.velocity=self.car.velocity.__add__(Vector(-1, 0))
+                        self.car.rotate(math.pi/-10)
                     if event.key == pygame.K_RIGHT:
-                        self.car.velocity=self.car.velocity.__add__(Vector(1, 0))
+                        self.car.rotate(math.pi/10)
                     if event.key == pygame.K_UP:
-                        self.car.velocity=self.car.velocity.__add__(Vector(0, -1))
+                        self.car.accelerate()
                     if event.key == pygame.K_DOWN:
-                        self.car.velocity=self.car.velocity.__add__(Vector(0, 1))
+                        self.car.deccelerate()
                     if event.key == pygame.K_q:
                         running = False
+                    if event.key == pygame.K_r:
+                        self.__init__()
             # wipe screen
             self.screen.fill('black')
             
@@ -182,18 +189,19 @@ class Car:
     def __init__(self, *, game: CarGame, position: Vector):
         self.game = game
         self.score = 0
-        self.velocity = Vector(0, 0)
+        self.speed = 0
+        self.acceleration_value = 0.1
+        self.direction = Vector(0, -1)
+        self.angle = 0
         self.position = position
-        self.wall_distances = self.get_wall_distances()
         
 
     def move(self):
-        new_position = self.position + self.velocity
+        new_position = self.position + Vector(self.speed * self.direction.x,self.speed * self.direction.y )
         self.wall_distances = self.get_wall_distances()
         entity, type = self.collides_with_walls(new_position)
         if type == EntityType.WALL:
-            self.velocity = Vector(0,0)
-            self.position = self.position + self.velocity
+            self.speed = 0
             self.subtract_score()
             print(f'Score: {self.score}. wall hit: -5')
             return
@@ -245,7 +253,24 @@ class Car:
             distance += increcment
 
         return distance
+    def rotate(self, angle: float) -> None:
+        cos_theta = math.cos(angle)
+        sin_theta = math.sin(angle)
+        new_x = self.direction.x * cos_theta - self.direction.y * sin_theta
+        new_y = self.direction.x * sin_theta + self.direction.y * cos_theta
+        self.direction = Vector(new_x,new_y)
 
+        
+    def accelerate(self) -> None:
+        self.speed += 0.1
+        if self.speed > 5:
+            self.speed = 5
+        
+    def deccelerate(self) -> None:
+        self.speed -= 0.1
+        if self.speed < -5:
+            self.speed = -5
+    
 if __name__ == '__main__':
     game = CarGame()
     game.run()
