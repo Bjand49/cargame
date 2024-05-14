@@ -118,20 +118,10 @@ class CarGame:
     def get_car_points(self, ent: 'Car'):
         vector = np.array([ent.direction.x,ent.direction.y])
         point = np.array([ent.position.x +.5,ent.position.y+.5])
-        # Convert the vector to unit vector
-        # Calculate the perpendicular vector
-        perpendicular_vector = np.array([-vector[1], vector[0]])
-        
-        # Calculate the points of the polygon
-        # point1 = (point - perpendicular_vector / 2)
-        # point2 = (point + perpendicular_vector / 2)
-        # point3 = ((point2[0] + unit_vector[0])*self.scale, (point2[1] + unit_vector[1])*self.scale)
-        # point4 = ((point1[0] + unit_vector[0])*self.scale, (point1[1] + unit_vector[1])*self.scale)
 
-        # points = [(point1[0]*self.scale,point1[1]*self.scale),(point2[0]*self.scale,point2[1]*self.scale),point3,point4]
+        perpendicular_vector = np.array([-vector[1], vector[0]])
+
         half_width = 0.5
-        half_length = 1.0
-        val1 = perpendicular_vector * half_width
         val2 = vector * half_width
         point1 = (point - perpendicular_vector *half_width - val2)*self.scale
         point2 = (point + perpendicular_vector *half_width - val2)*self.scale
@@ -141,15 +131,11 @@ class CarGame:
 
         return points
     def run(self):
-        
-        
         next_moves = {'up':False,
                       'down':False,
                       'left':False,
                       'right':False,
                       'restart':False}
-        activation_threshhold = 0
-        activation_index = activation_threshhold
         while self.running:
             # handle pygame events
             for event in pygame.event.get():
@@ -177,18 +163,14 @@ class CarGame:
                         next_moves['up'] = False
                     elif event.key == pygame.K_DOWN:
                         next_moves['down'] = False
-            if(activation_index >= activation_threshhold):
-                if next_moves['up']:
-                    self.car.accelerate()
-                if next_moves['down']:
-                    self.car.deccelerate()
-                if next_moves['left']:
-                    self.car.rotate(math.pi/-10)
-                if next_moves['right']:
-                    self.car.rotate(math.pi/10)
-                activation_index = 0
-            else:
-                activation_index +=1
+            if next_moves['up']:
+                self.car.accelerate()
+            if next_moves['down']:
+                self.car.deccelerate()
+            if next_moves['left']:
+                self.car.rotate(math.pi/-18)
+            if next_moves['right']:
+                self.car.rotate(math.pi/18)
             # wipe screen
             self.screen.fill('black')
             
@@ -207,7 +189,6 @@ class CarGame:
             # progress time
             self.clock.tick(60)
         print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
-        print(int(time.time() - self.start_time))  
 
     def set_next_checkpoint(self):
         checkpointcount = len(self.checkpoints)
