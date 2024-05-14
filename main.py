@@ -6,6 +6,8 @@ import random
 from typing import List
 import pygame
 from enum import Enum
+import numpy as np
+import time
 
 
 class EntityType(Enum):
@@ -38,8 +40,7 @@ class Vector:
 
     def __eq__(self, other: 'Vector') -> bool:
         return self.x == other.x and self.y == other.y
-    
-        
+           
 class CarGame:
     def __init__(self, scale: int = 30):
         self.scale = scale
@@ -58,6 +59,11 @@ class CarGame:
         self.checkpoint_color = (0, 0, 255)
         self.draw_map()
         self.set_next_checkpoint()
+        self.max_rounds = 2
+        self.rounds = 0
+        self.running = True
+        self.start_time = time.time()
+
         
 
     def load_map(self):
@@ -109,29 +115,80 @@ class CarGame:
         obj = ent.position
         return (obj.x * self.scale, obj.y * self.scale, self.scale, self.scale)
 
+    def get_car_points(self, ent: 'Car'):
+        vector = np.array([ent.direction.x,ent.direction.y])
+        point = np.array([ent.position.x +.5,ent.position.y+.5])
+        # Convert the vector to unit vector
+        # Calculate the perpendicular vector
+        perpendicular_vector = np.array([-vector[1], vector[0]])
+        
+        # Calculate the points of the polygon
+        # point1 = (point - perpendicular_vector / 2)
+        # point2 = (point + perpendicular_vector / 2)
+        # point3 = ((point2[0] + unit_vector[0])*self.scale, (point2[1] + unit_vector[1])*self.scale)
+        # point4 = ((point1[0] + unit_vector[0])*self.scale, (point1[1] + unit_vector[1])*self.scale)
+
+        # points = [(point1[0]*self.scale,point1[1]*self.scale),(point2[0]*self.scale,point2[1]*self.scale),point3,point4]
+        half_width = 0.5
+        half_length = 1.0
+        val1 = perpendicular_vector * half_width
+        val2 = vector * half_width
+        point1 = (point - perpendicular_vector *half_width - val2)*self.scale
+        point2 = (point + perpendicular_vector *half_width - val2)*self.scale
+        point3 = (point + perpendicular_vector * half_width + val2)*self.scale
+        point4 = (point - perpendicular_vector * half_width + val2)*self.scale        
+        points = [(point1[0],point1[1]),(point2[0],point2[1]),(point3[0],point3[1]),(point4[0],point4[1])]
+
+        return points
     def run(self):
         
-        running = True          
-
-        while running:
+        
+        next_moves = {'up':False,
+                      'down':False,
+                      'left':False,
+                      'right':False,
+                      'restart':False}
+        activation_threshhold = 0
+        activation_index = activation_threshhold
+        while self.running:
             # handle pygame events
-            print(f'Speed: {self.car.speed}')
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.car.rotate(math.pi/-10)
-                    if event.key == pygame.K_RIGHT:
-                        self.car.rotate(math.pi/10)
-                    if event.key == pygame.K_UP:
-                        self.car.accelerate()
-                    if event.key == pygame.K_DOWN:
-                        self.car.deccelerate()
-                    if event.key == pygame.K_q:
-                        running = False
-                    if event.key == pygame.K_r:
+                        next_moves['left'] = True
+                    elif event.key == pygame.K_RIGHT:
+                        next_moves['right'] = True
+                    elif event.key == pygame.K_UP:
+                        next_moves['up'] = True
+                    elif event.key == pygame.K_DOWN:
+                        next_moves['down'] = True
+                    elif event.key == pygame.K_q:
+                        self.running = False
+                    elif event.key == pygame.K_r:
                         self.__init__()
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT:
+                        next_moves['left'] = False
+                    elif event.key == pygame.K_RIGHT:
+                        next_moves['right'] = False
+                    elif event.key == pygame.K_UP:
+                        next_moves['up'] = False
+                    elif event.key == pygame.K_DOWN:
+                        next_moves['down'] = False
+            if(activation_index >= activation_threshhold):
+                if next_moves['up']:
+                    self.car.accelerate()
+                if next_moves['down']:
+                    self.car.deccelerate()
+                if next_moves['left']:
+                    self.car.rotate(math.pi/-10)
+                if next_moves['right']:
+                    self.car.rotate(math.pi/10)
+                activation_index = 0
+            else:
+                activation_index +=1
             # wipe screen
             self.screen.fill('black')
             
@@ -139,16 +196,19 @@ class CarGame:
             self.car.move()
 
             # render game
-            pygame.draw.rect(self.screen,
-                                self.car_color,
-                                self.block(self.car))
+            pygame.draw.polygon(self.screen,
+                    self.car_color,
+                    self.get_car_points(self.car))
+
             self.draw_map()
-            # render screen
+                # render screen
             pygame.display.flip()
 
             # progress time
             self.clock.tick(60)
-        print(f"final score: {self.car.score}")
+        print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
+        print(int(time.time() - self.start_time))  
+
     def set_next_checkpoint(self):
         checkpointcount = len(self.checkpoints)
         if(self.current_checkpoint is None):
@@ -160,11 +220,11 @@ class CarGame:
             self.current_checkpoint +=1
             if(self.current_checkpoint >= checkpointcount):
                 self.current_checkpoint=0
+                self.rounds +=1
+                if(self.rounds == self.max_rounds):
+                    self.running = False
+                    
             self.entities.append(self.checkpoints[self.current_checkpoint])
-            
-        
-        
-        
         
 class Entity:
     def __init__(self, position: Vector,type: EntityType):
@@ -262,12 +322,12 @@ class Car:
 
         
     def accelerate(self) -> None:
-        self.speed += 0.1
+        self.speed += 0.01
         if self.speed > 5:
             self.speed = 5
         
     def deccelerate(self) -> None:
-        self.speed -= 0.1
+        self.speed -= 0.01
         if self.speed < -5:
             self.speed = -5
     
