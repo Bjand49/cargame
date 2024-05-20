@@ -1,8 +1,5 @@
 import csv
-import json
 import math
-import pprint
-import random
 from typing import List
 import pygame
 from enum import Enum
@@ -167,45 +164,29 @@ class CarGame:
 
         return points
     def run(self):
-        next_moves = {'up':False,
-                      'down':False,
-                      'left':False,
-                      'right':False,
-                      'restart':False}
+        next_moves = []
         while self.running:
             # handle pygame events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        next_moves['left'] = True
-                    elif event.key == pygame.K_RIGHT:
-                        next_moves['right'] = True
-                    elif event.key == pygame.K_UP:
-                        next_moves['up'] = True
-                    elif event.key == pygame.K_DOWN:
-                        next_moves['down'] = True
-                    elif event.key == pygame.K_q:
+                    if event.key == pygame.K_q:
                         self.running = False
                     elif event.key == pygame.K_r:
                         self.__init__()
+                    else:
+                        next_moves.append(event.key)
+
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT:
-                        next_moves['left'] = False
-                    elif event.key == pygame.K_RIGHT:
-                        next_moves['right'] = False
-                    elif event.key == pygame.K_UP:
-                        next_moves['up'] = False
-                    elif event.key == pygame.K_DOWN:
-                        next_moves['down'] = False
-            if next_moves['up']:
+                    next_moves.remove(event.key)
+            if pygame.K_UP in next_moves:
                 self.car.accelerate()
-            if next_moves['down']:
+            if pygame.K_DOWN in next_moves:
                 self.car.deccelerate()
-            if next_moves['left']:
+            if pygame.K_LEFT in next_moves:
                 self.car.rotate(math.pi/-18)
-            if next_moves['right']:
+            if pygame.K_RIGHT in next_moves:
                 self.car.rotate(math.pi/18)
             # wipe screen
             self.screen.fill('black')
@@ -266,7 +247,6 @@ class Car:
         self.game = game
         self.score = 0
         self.speed = 0
-        self.acceleration_value = 0.1
         self.direction = Vector(0, -1)
         self.angle = 0
         self.position = position
@@ -310,7 +290,7 @@ class Car:
         return wall_distances
 
     def calculate_distance_in_direction(self, direction: str) -> float:
-        increcment = 0.33
+        increcment = 0.5
         dx,dy = 0,0
         if 'N' in direction:
             dy = -increcment
@@ -343,12 +323,12 @@ class Car:
 
         
     def accelerate(self) -> None:
-        self.speed += 0.01
+        self.speed += 0.001
         if self.speed > 5:
             self.speed = 5
         
     def deccelerate(self) -> None:
-        self.speed -= 0.01
+        self.speed -= 0.001
         if self.speed < -5:
             self.speed = -5
     
