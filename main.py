@@ -30,7 +30,7 @@ class Vector:
         return Vector(self.x + other.x * factor, self.y + other.y*factor)
 
     def within(self, other: 'Vector') -> bool:
-        distance = math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
+        distance = math.sqrt(abs(self.x - other.x) ** 2 + abs(self.y - other.y) ** 2)
 
         return distance < 1
     
@@ -45,7 +45,7 @@ class CarGame:
     def __init__(self, scale: int = 30):
         self.scale = scale
         self.entities: List[Entity]= []
-        self.checkpoints: List[Entity]= []
+        self.checkpoints = []
 
         ysize,xsize = self.load_map()
         self.grid = Vector(xsize, ysize)
@@ -85,29 +85,65 @@ class CarGame:
                     
                 elif cell == 'C':
                     self.car = Car(game=self,position=Vector(j,y))
-
+                # Assuming that the cell is not empty, the only last option is that its a number, and therefore a checkpoint.
+                # Migth need to be refactored later
                 elif cell != '':
                     checkpoints.append(dict({
                             'id':cell,
-                            'checkpoint':Entity(Vector(j,y),EntityType.CHECKPOINT)
+                            'point':Entity(Vector(j,y),EntityType.CHECKPOINT),
+                            'walls':[],
+                            'is_active':False
+                            
                         }))
+        directions = ['N','E','S','W']
+        for checkpoint in checkpoints:
+            points = [] 
+            for y in directions:
+                distance = 0
+                temp_x = 0
+                temp_y = 0
+                while True:
+                    if(y == 'N'):
+                        temp_y -= 1
+                    elif(y == 'E'):
+                        temp_x += 1
+                    elif(y == 'S'):
+                        temp_y += 1
+                    elif(y == 'W'):
+                        temp_x -= 1
+                    else:
+                        raise Exception('uninteded alteration happened')
+                    distance += 1
+                    temp_vector = Vector(checkpoint['point'].x + temp_x, checkpoint['point'].y + temp_y)
+                    if any(wall.within(Entity(temp_vector,EntityType.RAY)) for wall in self.entities):
+                        points.append((distance,temp_vector))
+                        break
 
-        checkpoints = sorted(checkpoints, key=lambda x: x["id"])
-        self.checkpoints += [x['checkpoint'] for x in checkpoints]
+                sorted_points = sorted(points, key=lambda point: point[0])
+                checkpoint['walls'] = [x[1] for x in sorted_points][:2]
+            
+        self.checkpoints = sorted(checkpoints, key=lambda x: x["id"])
+
         return height,width
         
 
     def draw_map(self):
         
         for i,b in enumerate(self.entities):
-            color = (255, 255, 255)
-            if(b.type == EntityType.CHECKPOINT):
-                color = self.checkpoint_color
-            elif(b.type == EntityType.WALL):
+            if(b.type == EntityType.WALL):
                 color = self.wall_color
-            pygame.draw.rect(self.screen,
-                                 color,
-                                 self.block(b))
+                pygame.draw.rect(self.screen,
+                                    color,
+                                    self.block(b))
+            if(self.current_checkpoint is not None):
+                checkpoint = self.checkpoints[self.current_checkpoint]
+                color = self.checkpoint_color
+                pygame.draw.line(self.screen,
+                                    color,
+                                    (checkpoint['walls'][0].x*self.scale,checkpoint['walls'][0].y*self.scale),
+                                    (checkpoint['walls'][1].x*self.scale,checkpoint['walls'][1].y*self.scale))
+
+            
     def __del__(self):
         pygame.quit()
 
@@ -123,10 +159,10 @@ class CarGame:
 
         half_width = 0.5
         val2 = vector * half_width
-        point1 = (point - perpendicular_vector *half_width - val2)*self.scale
-        point2 = (point + perpendicular_vector *half_width - val2)*self.scale
-        point3 = (point + perpendicular_vector * half_width + val2)*self.scale
-        point4 = (point - perpendicular_vector * half_width + val2)*self.scale        
+        point1 = (point - perpendicular_vector *half_width*1.1 - val2)*self.scale
+        point2 = (point + perpendicular_vector *half_width*1.1 - val2)*self.scale
+        point3 = (point + perpendicular_vector * half_width*0.9 + val2)*self.scale
+        point4 = (point - perpendicular_vector * half_width*0.9 + val2)*self.scale        
         points = [(point1[0],point1[1]),(point2[0],point2[1]),(point3[0],point3[1]),(point4[0],point4[1])]
 
         return points
@@ -187,25 +223,24 @@ class CarGame:
             pygame.display.flip()
 
             # progress time
-            self.clock.tick(60)
+            self.clock.tick(40)
         print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
 
     def set_next_checkpoint(self):
         checkpointcount = len(self.checkpoints)
+        for x in self.checkpoints:
+            x['is_active'] = False
         if(self.current_checkpoint is None):
             self.current_checkpoint = 0
-            self.entities.append(self.checkpoints[self.current_checkpoint])
-            return
         else:
-            self.entities.remove(self.checkpoints[self.current_checkpoint])
             self.current_checkpoint +=1
             if(self.current_checkpoint >= checkpointcount):
                 self.current_checkpoint=0
                 self.rounds +=1
                 if(self.rounds == self.max_rounds):
                     self.running = False
+        self.checkpoints[self.current_checkpoint]['is_active'] = True
                     
-            self.entities.append(self.checkpoints[self.current_checkpoint])
         
 class Entity:
     def __init__(self, position: Vector,type: EntityType):
@@ -241,15 +276,17 @@ class Car:
         new_position = self.position + Vector(self.speed * self.direction.x,self.speed * self.direction.y )
         self.wall_distances = self.get_wall_distances()
         entity, type = self.collides_with_walls(new_position)
+        current_checkpoint_walls = self.game.checkpoints[self.game.current_checkpoint]['walls']
+        rect = pygame.Rect(self.position.x,self.position.y, 1, 1)
+        if rect.clipline((current_checkpoint_walls[0].x, current_checkpoint_walls[0].y), (current_checkpoint_walls[1].x, current_checkpoint_walls[1].y)):
+            self.game.set_next_checkpoint()
+            print(f'Score: {self.score}. checkpoint hit: 10')
+            self.add_score()
         if type == EntityType.WALL:
             self.speed = 0
             self.subtract_score()
             print(f'Score: {self.score}. wall hit: -5')
             return
-        elif type == EntityType.CHECKPOINT:
-            self.game.set_next_checkpoint()
-            print(f'Score: {self.score}. checkpoint hit: 10')
-            self.add_score()
         
         self.position = new_position
         
@@ -273,7 +310,7 @@ class Car:
         return wall_distances
 
     def calculate_distance_in_direction(self, direction: str) -> float:
-        increcment = 0.03
+        increcment = 0.33
         dx,dy = 0,0
         if 'N' in direction:
             dy = -increcment
@@ -282,8 +319,8 @@ class Car:
         if 'E' in direction:
             dx = increcment 
         if 'W' in direction:
-            dx = -increcment 
-        
+            dx = -increcment
+
         distance = 0
         x, y = self.position.x, self.position.y
         while True:
@@ -292,7 +329,10 @@ class Car:
             if any(wall.within(Entity(Vector(x, y),EntityType.RAY)) for wall in self.game.entities):
                 break
             distance += increcment
-
+        pygame.draw.line(self.game.screen,
+                                 (255,255,255),
+                                 ((self.position.x+0.5)*self.game.scale, (self.position.y+0.5)*self.game.scale),
+                                 ((x+0.5)*self.game.scale,(y+0.5)*self.game.scale))
         return distance
     def rotate(self, angle: float) -> None:
         cos_theta = math.cos(angle)
