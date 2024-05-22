@@ -175,8 +175,7 @@ class CarGame:
                         self.running = False
                     elif event.key == pygame.K_r:
                         self.__init__()
-                    else:
-                        next_moves.append(event.key)
+                    next_moves.append(event.key)
 
                 if event.type == pygame.KEYUP:
                     next_moves.remove(event.key)
@@ -323,12 +322,12 @@ class Car:
 
         
     def accelerate(self) -> None:
-        self.speed += 0.001
+        self.speed += 0.01
         if self.speed > 5:
             self.speed = 5
         
     def deccelerate(self) -> None:
-        self.speed -= 0.001
+        self.speed -= 0.01
         if self.speed < -5:
             self.speed = -5
     
