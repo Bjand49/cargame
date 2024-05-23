@@ -6,7 +6,6 @@ import time
 from entitytype import EntityType
 from vector import Vector
 from car import Car
-
 class CarGame:
     def __init__(self, scale: int = 30):
         self.scale = scale
@@ -29,6 +28,11 @@ class CarGame:
         self.rounds = 0
         self.running = True
         self.start_time = time.time()
+        self.tickrate_per_second = 40
+        self.max_time= 50
+        self.max_ticks = self.max_time * self.tickrate_per_second
+        self.ticks = 0
+
 
     def load_map(self):
         filename = 'road.csv'
@@ -93,7 +97,7 @@ class CarGame:
 
     def draw_map(self):
         
-        for i,b in enumerate(self.entities):
+        for b in (self.entities):
             if(b.type == EntityType.WALL):
                 color = self.wall_color
                 pygame.draw.rect(self.screen,
@@ -130,45 +134,44 @@ class CarGame:
 
         return points
     def run(self):
-        next_moves = []
+        #items are up down left right
+        next_moves = [0,0,0,0]
+        self.car.move()
         while self.running:
-            # handle pygame events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        self.running = False
-                    elif event.key == pygame.K_r:
-                        self.__init__()
-                    next_moves.append(event.key)
+            input = [self.car.speed]
+            next_moves = self.controller.update(data=input)
+            if(next_moves is not None):
+                if next_moves[0] == 1:
+                    self.car.accelerate()
+                if next_moves[1] == 1:
+                    self.car.deccelerate()
+                if next_moves[2] == 1:
+                    self.car.rotate(-5)
+                if next_moves[3] == 1:
+                    self.car.rotate(5)
+                # wipe screen
+                self.screen.fill('black')
+                
+                # update game state
+                self.car.move()
 
-                if event.type == pygame.KEYUP:
-                    next_moves.remove(event.key)
-            if pygame.K_UP in next_moves:
-                self.car.accelerate()
-            if pygame.K_DOWN in next_moves:
-                self.car.deccelerate()
-            if pygame.K_LEFT in next_moves:
-                self.car.rotate(-5)
-            if pygame.K_RIGHT in next_moves:
-                self.car.rotate(5)
-            # wipe screen
-            self.screen.fill('black')
-            
-            # update game state
-            self.car.move()
+                # render game
+                pygame.draw.polygon(self.screen,
+                        self.car_color,
+                        self.get_car_points(self.car))
 
-            # render game
-            pygame.draw.polygon(self.screen,
-                    self.car_color,
-                    self.get_car_points(self.car))
-
-            self.draw_map()
-                # render screen
-            pygame.display.flip()
-            # progress time
-            self.clock.tick(60)
+                self.draw_map()
+                    # render screen
+                pygame.display.flip()
+                # progress time
+                self.clock.tick(self.tickrate_per_second)
+            else:
+                self.__init__()
+                print("reset")
+            self.ticks += 1
+            if(self.ticks > self.max_ticks):
+                print("game ended prematurely")
+                break
         print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
 
     def set_next_checkpoint(self):

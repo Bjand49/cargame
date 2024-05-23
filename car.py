@@ -12,6 +12,7 @@ class Car:
         self.direction = Vector(EntityType.CAR, 0, -1)
         self.angle = 0
         self.position = position
+        self.wall_distances = []
         
 
     def move(self):
@@ -46,30 +47,31 @@ class Car:
     def get_wall_distances(self) -> dict:
         wall_distances = {}
         i = 0
-        for angle in [45,-45,0]:
+        for angle in [45,0,-45]:
             wall_distances[i] = self.calculate_distance_in_direction(angle)
             i+=1
-        # print(wall_distances)
+        print(wall_distances)
         return wall_distances
 
     def calculate_distance_in_direction(self, angle: float) -> float:
         increment_step = 0.5
         increment = 0
         rotated_vector = self.rotate_vector(self.direction,angle)
-        length = 0
         compensated_vector = self.position
+        
         while increment < 20/increment_step:
+
             if any(wall.within(compensated_vector) for wall in self.game.entities):
                 break
-            
             increment += increment_step
-            vector_direction,length = self.increase_vector_length(rotated_vector,self.position,length)
+            vector_direction = self.increase_vector_length(rotated_vector,self.position,increment)
+
             compensated_vector = Vector(EntityType.CAR,self.position.x+vector_direction.x, self.position.y + vector_direction.y)
         pygame.draw.line(self.game.screen,
                                  (255,255,255),
                                  ((self.position.x+0.5)*self.game.scale, (self.position.y+0.5)*self.game.scale),
                                  ((compensated_vector.x+0.5)*self.game.scale,(compensated_vector.y+0.5)*self.game.scale))
-        return length
+        return increment
     
     def rotate(self, angle: float) -> None:
         self.direction = self.rotate_vector(self.direction,angle)
@@ -85,7 +87,7 @@ class Car:
             relative_x = relative_x/current_length
         multiplier = new_length/current_length
         new_vector = Vector(EntityType.NONE,(direction.x * multiplier), (direction.y * multiplier))
-        return new_vector,new_length
+        return new_vector
 
     def rotate_vector(self, direction: Vector, angle: float) -> Vector:
         angle_radians = math.radians(angle)
