@@ -45,44 +45,54 @@ class Car:
    
     def get_wall_distances(self) -> dict:
         wall_distances = {}
-
-        for direction in ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']:
-            wall_distances[direction] = self.calculate_distance_in_direction(direction)
-
+        i = 0
+        for angle in [45,-45,0]:
+            wall_distances[i] = self.calculate_distance_in_direction(angle)
+            i+=1
+        # print(wall_distances)
         return wall_distances
 
-    def calculate_distance_in_direction(self, direction: str) -> float:
-        increcment = 0.5
-        dx,dy = 0,0
-        if 'N' in direction:
-            dy = -increcment
-        if 'S' in direction:
-            dy = increcment
-        if 'E' in direction:
-            dx = increcment 
-        if 'W' in direction:
-            dx = -increcment
-
-        distance = 0
-        x, y = self.position.x, self.position.y
-        while True:
-            x += dx
-            y += dy
-            if any(wall.within(Vector(EntityType.NONE, x, y)) for wall in self.game.entities):
+    def calculate_distance_in_direction(self, angle: float) -> float:
+        increment_step = 0.5
+        increment = 0
+        rotated_vector = self.rotate_vector(self.direction,angle)
+        length = 0
+        compensated_vector = self.position
+        while increment < 20/increment_step:
+            if any(wall.within(compensated_vector) for wall in self.game.entities):
                 break
-            distance += increcment
+            
+            increment += increment_step
+            vector_direction,length = self.increase_vector_length(rotated_vector,self.position,length)
+            compensated_vector = Vector(EntityType.CAR,self.position.x+vector_direction.x, self.position.y + vector_direction.y)
         pygame.draw.line(self.game.screen,
                                  (255,255,255),
                                  ((self.position.x+0.5)*self.game.scale, (self.position.y+0.5)*self.game.scale),
-                                 ((x+0.5)*self.game.scale,(y+0.5)*self.game.scale))
-        return distance
+                                 ((compensated_vector.x+0.5)*self.game.scale,(compensated_vector.y+0.5)*self.game.scale))
+        return length
+    
     def rotate(self, angle: float) -> None:
-        cos_theta = math.cos(angle)
-        sin_theta = math.sin(angle)
-        new_x = self.direction.x * cos_theta - self.direction.y * sin_theta
-        new_y = self.direction.x * sin_theta + self.direction.y * cos_theta
-        self.direction = Vector(EntityType.NONE,new_x,new_y)
+        self.direction = self.rotate_vector(self.direction,angle)
+        
+    def increase_vector_length(self,direction: Vector, posistion:Vector, increase_by):
+        relative_x = direction.x+posistion.x
+        relative_y = direction.y+posistion.y
+        current_length = math.sqrt(relative_x**2 + relative_y**2)
+        new_length = current_length + increase_by
+        if(relative_y != 0):
+            relative_y = relative_y/current_length
+        if(relative_x != 0):
+            relative_x = relative_x/current_length
+        multiplier = new_length/current_length
+        new_vector = Vector(EntityType.NONE,(direction.x * multiplier), (direction.y * multiplier))
+        return new_vector,new_length
 
+    def rotate_vector(self, direction: Vector, angle: float) -> Vector:
+        angle_radians = math.radians(angle)
+        new_x = direction.x * math.cos(angle_radians) - direction.y * math.sin(angle_radians)
+        new_y = direction.x * math.sin(angle_radians) + direction.y * math.cos(angle_radians)
+        vector = Vector(EntityType.NONE,new_x,new_y)
+        return vector
         
     def accelerate(self) -> None:
         self.speed += 0.01

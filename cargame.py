@@ -150,9 +150,9 @@ class CarGame:
             if pygame.K_DOWN in next_moves:
                 self.car.deccelerate()
             if pygame.K_LEFT in next_moves:
-                self.car.rotate(math.pi/-18)
+                self.car.rotate(-5)
             if pygame.K_RIGHT in next_moves:
-                self.car.rotate(math.pi/18)
+                self.car.rotate(5)
             # wipe screen
             self.screen.fill('black')
             
@@ -168,7 +168,7 @@ class CarGame:
                 # render screen
             pygame.display.flip()
             # progress time
-            self.clock.tick(40)
+            self.clock.tick(60)
         print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
 
     def set_next_checkpoint(self):
