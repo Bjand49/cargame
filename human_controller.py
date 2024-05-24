@@ -4,10 +4,12 @@ from controller import controller
 import pygame
 
 class human_controller(controller):
-    def __init__(self) -> None:
+    def __init__(self,game: CarGame) -> None:
         self.input = [0,0,0,0]
         self.score = 0
         self.draw = True
+        self.game = game
+        self.game.controller = self
         
     def update(self,data):
         #items are up down left right
@@ -38,3 +40,5 @@ class human_controller(controller):
                 elif event.key == pygame.K_RIGHT:
                     self.input[3]=0
         return self.input
+    def run(self):
+        self.game.run()

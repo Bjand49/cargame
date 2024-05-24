@@ -13,7 +13,6 @@ class Car:
         self.angle = 0
         self.position = position
         self.wall_distances = []
-        self.draw = game.controller.draw
 
     def move(self):
         new_position = self.position + Vector(EntityType.CAR,self.speed * self.direction.x,self.speed * self.direction.y )
@@ -37,9 +36,9 @@ class Car:
         return None,EntityType.NONE
 
     def subtract_score(self):
-        self.score -= 5
+        self.score -= 1
     def add_score(self):
-        self.score += 10
+        self.score += 100
    
     def get_wall_distances(self) -> dict:
         wall_distances = {}
@@ -63,7 +62,7 @@ class Car:
             vector_direction = self.increase_vector_length(rotated_vector,self.position,increment)
 
             compensated_vector = Vector(EntityType.CAR,self.position.x+vector_direction.x, self.position.y + vector_direction.y)
-        if(self.draw is True):
+        if(self.game.controller.draw is True):
             pygame.draw.line(self.game.screen,
                                     (255,255,255),
                                     ((self.position.x+0.5)*self.game.scale, (self.position.y+0.5)*self.game.scale),

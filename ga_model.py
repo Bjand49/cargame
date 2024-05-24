@@ -8,6 +8,8 @@ class agent():
         assert len(dims) >= 2, 'Error: dims must be two or higher.'
         self.dims = dims
         self.DNA = []
+        self.score = 0
+        self.mutation_rate = 0.1
         for i, dim in enumerate(dims):
             if i < len(dims) - 1:
                 self.DNA.append(np.random.rand(dim, dims[i+1]))
@@ -23,8 +25,8 @@ class agent():
     def action(self, obs: Sequence):
         return self.update(obs).argmax()
 
-    def mutate(self, mutation_rate) -> None:
-        if random.random() < mutation_rate:
+    def mutate(self) -> None:
+        if random.random() < self.mutation_rate:
             random_layer = random.randint(0, len(self.DNA) - 1)
             row = random.randint(0, self.DNA[random_layer].shape[0] - 1)
             col = random.randint(0, self.DNA[random_layer].shape[1] - 1)
@@ -41,9 +43,8 @@ class agent():
         baby.DNA = baby_DNA
         return baby
 
-    def DNA(self):
-        return self.DNA
-
+    def __str__(self):
+        return f'agent points({self.score})'
 def softmax(z):
     return np.exp(z) / np.sum(np.exp(z))
 

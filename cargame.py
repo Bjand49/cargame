@@ -6,13 +6,12 @@ import time
 from entitytype import EntityType
 from vector import Vector
 from car import Car
-from controller import controller
+
 class CarGame:
-    def __init__(self, controller:controller, scale: int = 30):
+    def __init__(self, scale: int = 30):
         self.scale = scale
         self.entities:list[Vector]= []
         self.checkpoints = []
-        self.controller = controller
         self.ysize,self.xsize = self.load_map()
         self.grid = Vector(EntityType.NONE,self.xsize, self.ysize)
         self.current_checkpoint = None
@@ -26,7 +25,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 40
+        self.max_time= 15
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -178,9 +177,9 @@ class CarGame:
 
             self.ticks += 1
             if(self.ticks > self.max_ticks):
-                print("game ended prematurely")
                 break
         self.controller.set_score(self.car.score - self.ticks)
+        return self.car.score - self.ticks
 
     def set_next_checkpoint(self):
         checkpointcount = len(self.checkpoints)
