@@ -6,30 +6,27 @@ import time
 from entitytype import EntityType
 from vector import Vector
 from car import Car
+from controller import controller
 class CarGame:
-    def __init__(self, scale: int = 30):
+    def __init__(self, controller:controller, scale: int = 30):
         self.scale = scale
         self.entities:list[Vector]= []
         self.checkpoints = []
-
-        ysize,xsize = self.load_map()
-        self.grid = Vector(EntityType.NONE,xsize, ysize)
+        self.controller = controller
+        self.ysize,self.xsize = self.load_map()
+        self.grid = Vector(EntityType.NONE,self.xsize, self.ysize)
         self.current_checkpoint = None
-        pygame.init()
 
-        self.screen = pygame.display.set_mode((xsize * scale, ysize * scale))
-        self.clock = pygame.time.Clock()
         self.car_color = (255, 0, 0)
         self.wall_color = (0, 255, 0)
         self.checkpoint_color = (0, 0, 255)
-        self.draw_map()
         self.set_next_checkpoint()
         self.max_rounds = 2
         self.rounds = 0
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 50
+        self.max_time= 400
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -55,13 +52,12 @@ class CarGame:
                     self.car = Car(game=self,position=Vector(EntityType.CAR,j,y))
                 # Assuming that the cell is not empty, the only last option is that its a number, and therefore a checkpoint.
                 # Migth need to be refactored later
-                elif cell != '':
+                elif cell.isdigit():
                     checkpoints.append(dict({
                             'id':cell,
                             'point':Vector(EntityType.CHECKPOINT,j,y),
                             'walls':[],
                             'is_active':False
-                            
                         }))
         directions = ['N','E','S','W']
         for checkpoint in checkpoints:
@@ -135,11 +131,18 @@ class CarGame:
         return points
     def run(self):
         #items are up down left right
+        if(self.controller.draw is True):
+            self.screen = pygame.display.set_mode((self.xsize * self.scale, self.ysize * self.scale))
+            self.clock = pygame.time.Clock()
+
+            pygame.init()
+
         next_moves = [0,0,0,0]
-        self.car.move()
+        self.car.move(self.controller.draw)
         while self.running:
-            input = [self.car.speed]
+            input = [self.car.wall_distances[0],self.car.wall_distances[1],self.car.wall_distances[2],self.car.speed]
             next_moves = self.controller.update(data=input)
+            print(next_moves)
             if(next_moves is not None):
                 if next_moves[0] == 1:
                     self.car.accelerate()
@@ -149,22 +152,23 @@ class CarGame:
                     self.car.rotate(-5)
                 if next_moves[3] == 1:
                     self.car.rotate(5)
-                # wipe screen
-                self.screen.fill('black')
-                
-                # update game state
-                self.car.move()
+                if(self.controller.draw is True):
+                    # wipe screen
+                    self.screen.fill('black')
+                    
+                    # update game state
+                    self.car.move(self.controller.draw)
 
-                # render game
-                pygame.draw.polygon(self.screen,
-                        self.car_color,
-                        self.get_car_points(self.car))
+                    # render game
+                    pygame.draw.polygon(self.screen,
+                            self.car_color,
+                            self.get_car_points(self.car))
 
-                self.draw_map()
-                    # render screen
-                pygame.display.flip()
-                # progress time
-                self.clock.tick(self.tickrate_per_second)
+                    self.draw_map()
+                        # render screen
+                    pygame.display.flip()
+                    # progress time
+                    self.clock.tick(self.tickrate_per_second)
             else:
                 self.__init__()
                 print("reset")
@@ -172,7 +176,7 @@ class CarGame:
             if(self.ticks > self.max_ticks):
                 print("game ended prematurely")
                 break
-        print(f"final score: {self.car.score - int(time.time() - self.start_time)}")
+        self.controller.set_score(self.car.score - self.ticks)
 
     def set_next_checkpoint(self):
         checkpointcount = len(self.checkpoints)

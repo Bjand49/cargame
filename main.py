@@ -1,6 +1,6 @@
 from cargame import CarGame 
-from human_controller import human_controller
+from human_controller import human_controller as hu
+from ga_controller import GA_controller as ga
 if __name__ == '__main__':
-    game = CarGame()
-    game.controller = human_controller(game)
+    game = CarGame(hu())
     game.run()
