@@ -26,7 +26,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 400
+        self.max_time= 40
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -138,7 +138,7 @@ class CarGame:
             pygame.init()
 
         next_moves = [0,0,0,0]
-        self.car.move(self.controller.draw)
+        self.car.move()
         while self.running:
             input = [self.car.wall_distances[0],self.car.wall_distances[1],self.car.wall_distances[2],self.car.speed]
             next_moves = self.controller.update(data=input)
@@ -151,12 +151,12 @@ class CarGame:
                     self.car.rotate(-5)
                 if next_moves[3] == 1:
                     self.car.rotate(5)
-                self.car.move(self.controller.draw)
                 if(self.controller.draw is True):
                     # wipe screen
                     self.screen.fill('black')
                     
                     # update game state
+                    self.car.move() 
 
                     # render game
                     pygame.draw.polygon(self.screen,
@@ -168,9 +168,14 @@ class CarGame:
                     pygame.display.flip()
                     # progress time
                     self.clock.tick(self.tickrate_per_second)
+                else:
+                    self.car.move() 
+
             else:
-                self.__init__()
+                self.__init__(controller=self.controller)
                 print("reset")
+                
+
             self.ticks += 1
             if(self.ticks > self.max_ticks):
                 print("game ended prematurely")

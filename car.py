@@ -13,20 +13,19 @@ class Car:
         self.angle = 0
         self.position = position
         self.wall_distances = []
+        self.draw = game.controller.draw
 
-    def move(self,draw:bool):
+    def move(self):
         new_position = self.position + Vector(EntityType.CAR,self.speed * self.direction.x,self.speed * self.direction.y )
-        self.wall_distances = self.get_wall_distances(draw)
+        self.wall_distances = self.get_wall_distances()
         _, entity_type = self.collides_with_walls(new_position)
         current_checkpoint_walls = self.game.checkpoints[self.game.current_checkpoint]['walls']
         if(self.circle_intersects_segment((self.position.x+0.5,self.position.y-0.5),1,(current_checkpoint_walls[0].x, current_checkpoint_walls[0].y),(current_checkpoint_walls[1].x, current_checkpoint_walls[1].y))):
             self.game.set_next_checkpoint()
-            print(f'Score: {self.score}. checkpoint hit: 10')
             self.add_score()
         if entity_type == EntityType.WALL:
             self.speed = 0
             self.subtract_score()
-            print(f'Score: {self.score}. wall hit: -5')
             return
         
         self.position = new_position
@@ -42,15 +41,15 @@ class Car:
     def add_score(self):
         self.score += 10
    
-    def get_wall_distances(self,draw: bool) -> dict:
+    def get_wall_distances(self) -> dict:
         wall_distances = {}
         i = 0
         for angle in [45,0,-45]:
-            wall_distances[i] = self.calculate_distance_in_direction(draw,angle)
+            wall_distances[i] = self.calculate_distance_in_direction(angle)
             i+=1
         return wall_distances
 
-    def calculate_distance_in_direction(self, draw: bool, angle: float) -> float:
+    def calculate_distance_in_direction(self, angle: float) -> float:
         increment_step = 0.5
         increment = 0
         rotated_vector = self.rotate_vector(self.direction,angle)
@@ -64,7 +63,7 @@ class Car:
             vector_direction = self.increase_vector_length(rotated_vector,self.position,increment)
 
             compensated_vector = Vector(EntityType.CAR,self.position.x+vector_direction.x, self.position.y + vector_direction.y)
-        if(draw):
+        if(self.draw is True):
             pygame.draw.line(self.game.screen,
                                     (255,255,255),
                                     ((self.position.x+0.5)*self.game.scale, (self.position.y+0.5)*self.game.scale),

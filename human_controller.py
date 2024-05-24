@@ -18,7 +18,7 @@ class human_controller(controller):
                 if event.key == pygame.K_q:
                     self.game.running = False
                 elif event.key == pygame.K_r:
-                    return None
+                    self.game.__init__(self.game.controller)
                 elif event.key == pygame.K_UP:
                     self.input[0]=1
                 elif event.key == pygame.K_DOWN:
