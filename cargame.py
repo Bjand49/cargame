@@ -142,7 +142,6 @@ class CarGame:
         while self.running:
             input = [self.car.wall_distances[0],self.car.wall_distances[1],self.car.wall_distances[2],self.car.speed]
             next_moves = self.controller.update(data=input)
-            print(next_moves)
             if(next_moves is not None):
                 if next_moves[0] == 1:
                     self.car.accelerate()
@@ -152,12 +151,12 @@ class CarGame:
                     self.car.rotate(-5)
                 if next_moves[3] == 1:
                     self.car.rotate(5)
+                self.car.move(self.controller.draw)
                 if(self.controller.draw is True):
                     # wipe screen
                     self.screen.fill('black')
                     
                     # update game state
-                    self.car.move(self.controller.draw)
 
                     # render game
                     pygame.draw.polygon(self.screen,
