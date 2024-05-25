@@ -9,7 +9,8 @@ class agent():
         self.dims = dims
         self.DNA = []
         self.score = 0
-        self.mutation_rate = 0.1
+        self.index= None
+        self.mutation_rate = 0.05
         for i, dim in enumerate(dims):
             if i < len(dims) - 1:
                 self.DNA.append(np.random.rand(dim, dims[i+1]))

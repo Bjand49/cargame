@@ -36,7 +36,7 @@ class Car:
         return None,EntityType.NONE
 
     def subtract_score(self):
-        self.score -= 1
+        self.score -= 0
     def add_score(self):
         self.score += 100
    

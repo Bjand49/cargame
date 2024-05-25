@@ -11,7 +11,7 @@ class human_controller(controller):
         self.game = game
         self.game.controller = self
         
-    def update(self,data):
+    def update(self,data,index):
         #items are up down left right
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -41,4 +41,5 @@ class human_controller(controller):
                     self.input[3]=0
         return self.input
     def run(self):
-        self.game.run()
+        score = self.game.run()
+        print(f"final score: {score}")

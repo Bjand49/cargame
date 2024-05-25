@@ -1,5 +1,7 @@
 import csv
 import math
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import numpy as np
 import time
@@ -25,7 +27,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 15
+        self.max_time= 5
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -53,7 +55,7 @@ class CarGame:
                 # Migth need to be refactored later
                 elif cell.isdigit():
                     checkpoints.append(dict({
-                            'id':cell,
+                            'id':int(cell),
                             'point':Vector(EntityType.CHECKPOINT,j,y),
                             'walls':[],
                             'is_active':False
@@ -128,7 +130,7 @@ class CarGame:
         points = [(point1[0],point1[1]),(point2[0],point2[1]),(point3[0],point3[1]),(point4[0],point4[1])]
 
         return points
-    def run(self):
+    def run(self,index=0):
         #items are up down left right
         if(self.controller.draw is True):
             self.screen = pygame.display.set_mode((self.xsize * self.scale, self.ysize * self.scale))
@@ -140,7 +142,7 @@ class CarGame:
         self.car.move()
         while self.running:
             input = [self.car.wall_distances[0],self.car.wall_distances[1],self.car.wall_distances[2],self.car.speed]
-            next_moves = self.controller.update(data=input)
+            next_moves = self.controller.update(data=input,index=index)
             if(next_moves is not None):
                 if next_moves[0] == 1:
                     self.car.accelerate()
