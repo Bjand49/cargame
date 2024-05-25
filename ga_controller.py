@@ -13,12 +13,12 @@ class GA_controller(controller):
         self.draw = False
         self.game = game
         self.game.controller = self
-        self.population_number = 40
+        self.population_number = 500
         self.intialize_population(self.population_number)
         self.current_runner = 0
              
     def intialize_population(self,count:int):
-        self.population = [agent(dims=[4,4,4]) for _ in range(count)]   
+        self.population = [agent(dims=[4,4,8,4]) for _ in range(count)]   
         
     def update(self, data,index) -> tuple[int,int,int,int]:
         test = self.population[index].update(obs=data)
@@ -27,16 +27,18 @@ class GA_controller(controller):
         return updated
     def run(self,times=1):
         command = "c"
+        itteration = 1
         while command != "q":
             self.current_runner = 0
             if(command == "c"):
-                for i in range(times):
+                for _ in range(times):
                     start = time.time()
 
-                    print(f"Evolution number: {i} start")
+                    print(f"Evolution number: {itteration} start")
                     self.evolve()
                     end = time.time()
-                    print(f"Evolution number: {i} end, took {end-start}")
+                    print(f"Evolution number: {itteration} end, took {end-start}")
+                    itteration += 1
                 print("------------------------------------------")
                 sorted_population = sorted(self.population, key=lambda x: x.score)
                 print(sorted_population[-1].index)
@@ -51,7 +53,8 @@ class GA_controller(controller):
                 self.draw = True
                 self.game.__init__()
                 self.game.run(index=self.current_runner)
-            self.draw = False
+                self.draw = False
+                self.game.__del__()
 
 
 
