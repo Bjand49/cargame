@@ -27,7 +27,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 5
+        self.max_time= 20
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -120,7 +120,7 @@ class CarGame:
 
         return points
 
-    def run(self, index=0):
+    def run(self, id=None):
         # items are up down left right
         if self.controller.draw is True:
             self.screen = pygame.display.set_mode((self.xsize * self.scale, self.ysize * self.scale))
@@ -132,7 +132,7 @@ class CarGame:
         self.car.move()
         while self.running:
             input = [self.car.wall_distances[0], self.car.wall_distances[1], self.car.wall_distances[2], self.car.speed]
-            next_moves = self.controller.update(data=input, index=index)
+            next_moves = self.controller.update(data=input, id=id)
             if next_moves is not None:
                 if next_moves[0] == 1:
                     self.car.accelerate()

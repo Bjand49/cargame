@@ -1,23 +1,30 @@
 import random
-from typing import Tuple, List, Sequence
+from typing import Tuple, Sequence
 import numpy as np
 
-
-class agent():
+class agent:
     def __init__(self, *, dims: Tuple[int, ...]):
         assert len(dims) >= 2, 'Error: dims must be two or higher.'
         self.dims = dims
-        self.DNA = []
+        self._DNA = []
         self.score = 0
-        self.index= None
-        self.mutation_rate = 0.05
+        self.id = 0
+        self.mutation_rate = 1
         for i, dim in enumerate(dims):
             if i < len(dims) - 1:
-                self.DNA.append(np.random.rand(dim, dims[i+1]))
+                self._DNA.append(np.random.rand(dim, dims[i + 1]))
 
-    def update(self, obs: Sequence) -> Tuple[int, int,int,int]:
+        # Convert DNA to a tuple to ensure it's immutable
+        self._DNA = tuple(map(np.copy, self._DNA))
+
+    @property
+    def DNA(self):
+        # Return a copy to ensure immutability
+        return tuple(map(np.copy, self._DNA))
+
+    def update(self, obs: Sequence) -> Tuple[int, int, int, int]:
         x = obs
-        for i, layer in enumerate(self.DNA):
+        for i, layer in enumerate(self._DNA):
             if not i == 0:
                 x = leaky_relu(x)
             x = x @ layer
@@ -26,26 +33,33 @@ class agent():
     def action(self, obs: Sequence):
         return self.update(obs).argmax()
 
-    def mutate(self) -> None:
-        if random.random() < self.mutation_rate:
-            random_layer = random.randint(0, len(self.DNA) - 1)
-            row = random.randint(0, self.DNA[random_layer].shape[0] - 1)
-            col = random.randint(0, self.DNA[random_layer].shape[1] - 1)
-            self.DNA[random_layer][row][col] = random.uniform(-1, 1)
+    def mutate(self):
+        # Create a new instance of the agent with mutated DNA
+        mutated_DNA = list(map(np.copy, self._DNA))
+        random_layer = random.randint(0, len(mutated_DNA) - 1)
+        row = random.randint(0, mutated_DNA[random_layer].shape[0] - 1)
+        col = random.randint(0, mutated_DNA[random_layer].shape[1] - 1)
+        mutated_DNA[random_layer][row][col] = random.uniform(-1, 1)
+        mutated_agent = type(self)(dims=self.dims)
+        mutated_agent._DNA = tuple(mutated_DNA)
+        mutated_agent.score = self.score
+        return mutated_agent
 
     def __add__(self, other):
         baby_DNA = []
-        for mom, dad in zip(self.DNA, other.DNA):
+        for mom, dad in zip(self._DNA, other._DNA):
             if random.random() > 0.5:
                 baby_DNA.append(mom)
             else:
                 baby_DNA.append(dad)
         baby = type(self)(dims=self.dims)
-        baby.DNA = baby_DNA
+        # Convert baby_DNA to a tuple to ensure it's immutable
+        baby._DNA = tuple(map(np.copy, baby_DNA))
         return baby
 
     def __str__(self):
         return f'agent points({self.score})'
+
 def softmax(z):
     return np.exp(z) / np.sum(np.exp(z))
 

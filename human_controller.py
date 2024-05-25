@@ -11,7 +11,7 @@ class human_controller(controller):
         self.game = game
         self.game.controller = self
         
-    def update(self,data,index):
+    def update(self,data,id):
         #items are up down left right
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
