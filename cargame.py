@@ -1,5 +1,4 @@
 import csv
-import math
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
@@ -27,7 +26,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 2
+        self.max_time= 10
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 

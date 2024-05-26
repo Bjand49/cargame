@@ -16,8 +16,8 @@ class Vector:
 
     def within(self, other: 'Vector') -> bool:
         distance = math.sqrt(abs(self.x - other.x) ** 2 + abs(self.y - other.y) ** 2)
-
         return distance < 1
+    
     def __mul__(self,value:float):
         return Vector(self.type, self.x*value, self.y*value)
     

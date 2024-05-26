@@ -21,7 +21,10 @@ class agent:
     def DNA(self):
         # Return a copy to ensure immutability
         return tuple(map(np.copy, self._DNA))
-
+    
+    def set_dna(self,data):
+        self._DNA = data
+        
     def update(self, obs: Sequence) -> Tuple[int, int, int, int]:
         x = obs
         for i, layer in enumerate(self._DNA):

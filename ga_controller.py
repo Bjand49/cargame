@@ -2,10 +2,8 @@ from ga_model import agent
 from controller import controller
 import numpy as np
 from cargame import CarGame
-import asyncio
 import time
-import asyncio
-import random
+from pickle4 import pickle
 class GA_controller(controller):
 
     def __init__(self,game: CarGame) -> None:
@@ -13,7 +11,7 @@ class GA_controller(controller):
         self.draw = False
         self.game = game
         self.game.controller = self
-        self.population_number = 10 * 2 * 2
+        self.population_number = 20 * 2 * 2
         self.generations=[]
         self.itteration = 0
         self.current_agent = None
@@ -27,7 +25,7 @@ class GA_controller(controller):
         updated = np.where(test>0.4, 1,0)
         
         return updated
-    def run(self,times=8):
+    def run(self,times=1):
         command = "c"
         self.itteration = 0
         while command != "q":
@@ -66,6 +64,9 @@ class GA_controller(controller):
                 self.game.__del__()
             if(command == "asdf"):
                 print(self.generations)
+            if(command == "p"):
+                with open("saved_agent.txt", "wb") as file:
+                    file.write(pickle.dumps(sorted_population[-1].DNA))
 
     def evolve(self):
         #select best
@@ -103,10 +104,6 @@ class GA_controller(controller):
             score1 = agent.score
             self.run_game(agent)
             score2 = agent.score
-            
-            if(score1 != 0 and (score1!=score2)):
-                print("err")
-
         print(max(self.population, key=lambda x: x.score))
 
     def run_game(self, agent) -> int:

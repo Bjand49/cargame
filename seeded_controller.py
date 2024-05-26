@@ -15,11 +15,11 @@ class seeded_controller(controller):
 
     def load_DNA(self,DNA):
         self.agent = agent(dims=[4,4,4])
-        self.agent.DNA = DNA
+        self.agent.set_dna(data=DNA)
         
-    def update(self, data) -> tuple[int,int,int,int]:
+    def update(self, data, id) -> tuple[int,int,int,int]:
         test = self.agent.update(data)
-        updated = np.where(test>0.5, 1,0)
+        updated = np.where(test>0.4, 1,0)
         
         return updated
     def run(self):
