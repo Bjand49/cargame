@@ -32,7 +32,7 @@ class CarGame:
         self.ticks = 0
 
     def load_map(self):
-        filename = 'road.csv'
+        filename = 'maps/plus.csv'
         data = []
         height = 0
         width = 0
@@ -142,7 +142,7 @@ class CarGame:
                     self.car.rotate(-5)
                 if next_moves[3] == 1:
                     self.car.rotate(5)
-                if self.controller.draw is True:
+                if self.controller.draw is True and self.running:
                     # wipe screen
                     self.screen.fill('black')
 

@@ -13,7 +13,7 @@ class GA_controller(controller):
         self.draw = False
         self.game = game
         self.game.controller = self
-        self.population_number = 2 * 2 * 2
+        self.population_number = 10 * 2 * 2
         self.generations=[]
         self.itteration = 0
         self.current_agent = None
@@ -71,8 +71,8 @@ class GA_controller(controller):
         #select best
         if(self.current_agent is not None):
             self.generations.append({'generation':self.itteration, 'data':[x.score for x in self.population]})
-        print(f"pre-sort: {[x.score for x in self.population]}")
         self.population.sort(key=lambda x: x.score, reverse=True)
+        print(f"Points: {[x.score for x in self.population]}")
         
         num_selected = len(self.population) // 2
         selected_agents = self.population[:num_selected]

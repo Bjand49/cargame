@@ -19,8 +19,10 @@ class human_controller(controller):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     self.game.running = False
+                    self.game.__del__()
                 elif event.key == pygame.K_r:
-                    self.game.__init__(self.game.controller)
+                    self.game.__init__()
+                    self.game.controller = self
                 elif event.key == pygame.K_UP:
                     self.input[0]=1
                 elif event.key == pygame.K_DOWN:

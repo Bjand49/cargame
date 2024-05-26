@@ -69,7 +69,7 @@ class Car:
 
             increment += increment_step
 
-        if self.game.controller.draw:
+        if self.game.controller.draw and self.game.running:
             pygame.draw.line(
                 self.game.screen,
                 (255, 255, 255),
