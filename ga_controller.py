@@ -11,7 +11,7 @@ class GA_controller(controller):
         self.draw = False
         self.game = game
         self.game.controller = self
-        self.population_number = 20 * 2 * 2
+        self.population_number = 1 * 2 * 2
         self.generations=[]
         self.itteration = 0
         self.current_agent = None
@@ -25,7 +25,7 @@ class GA_controller(controller):
         updated = np.where(test>0.4, 1,0)
         
         return updated
-    def run(self,times=100):
+    def run(self,times=1):
         command = "c"
         self.itteration = 0
         while command != "q":
@@ -53,7 +53,10 @@ class GA_controller(controller):
             print("type 'w' to watch the best run of the previous generation")
             print("type 'q' to quit")
             print("type 'asdf' to test")
-            
+            with open("agentDNA.txt", "wb") as file:
+                file.write(pickle.dumps(sorted_population[-1].DNA))
+            np.savetxt("agentGenerations.txt", self.generations, delimiter=" ", newline = "\n", fmt="%s")
+
             command = input("").lower()
             if(command == "w"):
                 self.draw = True

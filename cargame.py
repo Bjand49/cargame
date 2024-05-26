@@ -31,7 +31,7 @@ class CarGame:
         self.ticks = 0
 
     def load_map(self):
-        filename = 'maps/l.csv'
+        filename = 'maps/road.csv'
         data = []
         height = 0
         width = 0
