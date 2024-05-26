@@ -27,7 +27,7 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 20
+        self.max_time= 2
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
@@ -167,6 +167,7 @@ class CarGame:
 
             self.ticks += 1
             if self.ticks > self.max_ticks:
+                self.__del__()
                 break
         self.controller.set_score(self.car.score - self.ticks)
         return self.car.score - self.ticks
