@@ -11,21 +11,21 @@ class GA_controller(controller):
         self.draw = False
         self.game = game
         self.game.controller = self
-        self.population_number = 1 * 2 * 2
+        self.population_number = 70 * 2 * 2
         self.generations=[]
         self.itteration = 0
         self.current_agent = None
         self.intialize_population(self.population_number)
         
     def intialize_population(self,count:int):
-        self.population = [agent(dims=[4,8,8,4]) for _ in range(count)]
+        self.population = [agent(dims=[4,8,4]) for _ in range(count)]
         
     def update(self, data, id) -> tuple[int,int,int,int]:
         test = self.current_agent.update(obs=data)
         updated = np.where(test>0.4, 1,0)
         
         return updated
-    def run(self,times=1):
+    def run(self,times=100):
         command = "c"
         self.itteration = 0
         while command != "q":
