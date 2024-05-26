@@ -108,7 +108,7 @@ class GA_controller(controller):
 
     def run_game(self, agent) -> int:
         self.game.__init__()
-        self.current_agent = agent
+        self.game.controller = self
         points = self.game.run(agent.id)
         agent.score = points
         self.game.__del__()

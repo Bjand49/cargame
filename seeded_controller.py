@@ -23,5 +23,7 @@ class seeded_controller(controller):
         
         return updated
     def run(self):
+        self.game.__init__()
+        self.game.controller = self
         self.game.run()
 
