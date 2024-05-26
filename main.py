@@ -6,6 +6,8 @@ from pickle4 import pickle
 
 if __name__ == '__main__':
     controller = None
+    game = CarGame()
+
     while True:
         print("type '1' to play as a human")
         print("type '2' to watch the best run of the previous generation")
@@ -14,7 +16,6 @@ if __name__ == '__main__':
             
 
         decider = input("").lower()
-        game = CarGame()
 
         if(decider == "1"):
             controller = hu(game)

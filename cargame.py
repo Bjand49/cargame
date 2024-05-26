@@ -26,12 +26,12 @@ class CarGame:
         self.running = True
         self.start_time = time.time()
         self.tickrate_per_second = 40
-        self.max_time= 10
+        self.max_time= 20
         self.max_ticks = self.max_time * self.tickrate_per_second
         self.ticks = 0
 
     def load_map(self):
-        filename = 'maps/plus.csv'
+        filename = 'maps/l.csv'
         data = []
         height = 0
         width = 0
@@ -166,9 +166,10 @@ class CarGame:
 
             self.ticks += 1
             if self.ticks > self.max_ticks:
-                self.__del__()
                 break
         self.controller.set_score(self.car.score - self.ticks)
+        self.__del__()
+
         return self.car.score - self.ticks
 
     def set_next_checkpoint(self):

@@ -25,7 +25,7 @@ class GA_controller(controller):
         updated = np.where(test>0.4, 1,0)
         
         return updated
-    def run(self,times=1):
+    def run(self,times=20):
         command = "c"
         self.itteration = 0
         while command != "q":
