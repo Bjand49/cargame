@@ -18,14 +18,14 @@ class GA_controller(controller):
         self.intialize_population(self.population_number)
         
     def intialize_population(self,count:int):
-        self.population = [agent(dims=[4,4,4]) for _ in range(count)]
+        self.population = [agent(dims=[4,8,8,4]) for _ in range(count)]
         
     def update(self, data, id) -> tuple[int,int,int,int]:
         test = self.current_agent.update(obs=data)
         updated = np.where(test>0.4, 1,0)
         
         return updated
-    def run(self,times=20):
+    def run(self,times=100):
         command = "c"
         self.itteration = 0
         while command != "q":
@@ -101,9 +101,8 @@ class GA_controller(controller):
             
     def run_generation(self):
         for agent in self.population:
-            score1 = agent.score
+            self.current_agent = agent
             self.run_game(agent)
-            score2 = agent.score
         print(max(self.population, key=lambda x: x.score))
 
     def run_game(self, agent) -> int:
