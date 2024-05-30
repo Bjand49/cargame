@@ -9,10 +9,11 @@ from vector import Vector
 from car import Car
 
 class CarGame:
-    def __init__(self, scale: int = 30):
+    def __init__(self, scale: int = 30,map='road'):
         self.scale = scale
         self.entities:list[Vector]= []
         self.checkpoints = []
+        self.mapname = map
         self.ysize,self.xsize = self.load_map()
         self.grid = Vector(EntityType.NONE,self.xsize, self.ysize)
         self.current_checkpoint = None
@@ -31,7 +32,8 @@ class CarGame:
         self.ticks = 0
 
     def load_map(self):
-        filename = 'maps/road.csv'
+        filename = 'maps/' + self.mapname + '.csv'
+        print(f"mapname: {self.mapname}" )
         data = []
         height = 0
         width = 0

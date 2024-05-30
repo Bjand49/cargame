@@ -43,7 +43,7 @@ class human_controller(controller):
                     self.input[3]=0
         return self.input
     def run(self):
-        self.game.__init__()
+        self.game.__init__(map=self.game.mapname)
         self.game.controller = self
         score = self.game.run()
         print(f"final score: {score}")

@@ -14,7 +14,7 @@ class seeded_controller(controller):
 
 
     def load_DNA(self,DNA):
-        self.agent = agent(dims=[4,4,4])
+        self.agent = agent(dims=[4,8,8,4])
         self.agent.set_dna(data=DNA)
         
     def update(self, data, id) -> tuple[int,int,int,int]:
@@ -23,7 +23,10 @@ class seeded_controller(controller):
         
         return updated
     def run(self):
-        self.game.__init__()
+        self.game.__init__(map=self.game.mapname)
         self.game.controller = self
-        self.game.run()
+        points = self.game.run()
+        print(f"final score: {points}")
+
+        
 

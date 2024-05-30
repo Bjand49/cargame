@@ -6,8 +6,8 @@ from pickle4 import pickle
 
 if __name__ == '__main__':
     controller = None
-    game = CarGame()
-
+    map = 'road'
+    data = ""
     while True:
         print("type '1' to play as a human")
         print("type '2' to watch the best run of the previous generation")
@@ -16,16 +16,27 @@ if __name__ == '__main__':
             
 
         decider = input("").lower()
-
+        print(map)
         if(decider == "1"):
-            controller = hu(game)
+            controller = hu(CarGame(map=map))
         elif(decider == "2"):
-            data = pickle.load(open('saved_agent.txt', 'rb'))
-            controller = su(game)
+            print("input filename")
+            dna_file = input("").lower()
+            try:
+                data = pickle.load(open(dna_file+'.txt', 'rb'))
+            except:
+                if(data is ""):
+                    print("please input real data")
+                print("invalid file, using previous")
+            controller = su(CarGame(map=map))
             controller.load_DNA(DNA=data)
         elif (decider == "3"):        
-            controller = ga(game)
+            controller = ga(CarGame(map=map))
         elif(decider == "q"):
             break
+        elif(decider == "r"):
+            print("write mapname:")
+            map = input("").lower()
         if(controller is not None):
             controller.run()
+        controller = None
