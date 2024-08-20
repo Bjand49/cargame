@@ -9,7 +9,7 @@ from vector import Vector
 from car import Car
 
 class CarGame:
-    def __init__(self, scale: int = 30,map='road'):
+    def __init__(self, scale: int = 30,map='plus'):
         self.scale = scale
         self.entities:list[Vector]= []
         self.checkpoints = []
@@ -33,7 +33,6 @@ class CarGame:
 
     def load_map(self):
         filename = 'maps/' + self.mapname + '.csv'
-        print(f"mapname: {self.mapname}" )
         data = []
         height = 0
         width = 0

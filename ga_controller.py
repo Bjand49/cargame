@@ -18,7 +18,7 @@ class GA_controller(controller):
         self.intialize_population(self.population_number)
         
     def intialize_population(self,count:int):
-        self.population = [agent(dims=[4,8,4]) for _ in range(count)]
+        self.population = [agent(dims=[4,12,12,4]) for _ in range(count)]
         
     def update(self, data, id) -> tuple[int,int,int,int]:
         test = self.current_agent.update(obs=data)

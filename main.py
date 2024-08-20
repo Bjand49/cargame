@@ -6,7 +6,7 @@ from pickle4 import pickle
 
 if __name__ == '__main__':
     controller = None
-    map = 'road'
+    map = 'plus'
     data = ""
     while True:
         print("type '1' to play as a human")
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             try:
                 data = pickle.load(open(dna_file+'.txt', 'rb'))
             except:
-                if(data is ""):
+                if(data == ""):
                     print("please input real data")
                 print("invalid file, using previous")
             controller = su(CarGame(map=map))
